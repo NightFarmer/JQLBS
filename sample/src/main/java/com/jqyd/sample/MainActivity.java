@@ -3,16 +3,10 @@ package com.jqyd.sample;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
-import com.jqyd.jqlbs.JQLBSClient;
-import com.jqyd.jqlbs.LocationUpLoadCallBack;
-import com.jqyd.jqlbs.daemon.DaemonService1;
-import com.jqyd.jqlbs.daemon.DaemonService2;
+import com.jqyd.jqlbs.daemon.DaemonUtils;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -43,13 +37,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 
             case R.id.button1:
-                Intent i1 = new Intent(MainActivity.this, DaemonService1.class);
-                startService(i1);
-
-                Intent i2 = new Intent(MainActivity.this, DaemonService2.class);
-                startService(i2);
+                new Intent().putExtra("", String.class);
+                DaemonUtils.startHeartbeatService(MainActivity.this, SampleCallBack.class);
                 break;
-
             case R.id.button2:
                 //关闭Activity
                 this.finish();
