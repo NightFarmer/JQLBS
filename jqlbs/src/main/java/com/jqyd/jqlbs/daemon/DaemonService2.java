@@ -1,13 +1,18 @@
 package com.jqyd.jqlbs.daemon;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.jqyd.jqlbs.StrongService;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * 守护进程1
@@ -61,6 +66,7 @@ public class DaemonService2 extends Service {
 
     @Override
     public void onCreate() {
+        acquireWakeLock();
         Toast.makeText(DaemonService2.this, "Service2 onCreate...", Toast.LENGTH_SHORT)
                 .show();
         keepServiceMain();
@@ -71,10 +77,10 @@ public class DaemonService2 extends Service {
      * 判断Service1是否还在运行，如果不是则启动Service1
      */
     private void keepService1() {
-//        if (DaemonUtils.isHeartbeatStop1(DaemonService2.this)) {
-        Intent ii = new Intent(DaemonService2.this, DaemonService1.class);
-        startService(ii);
-//        }
+        if (DaemonUtils.isHeartbeatStop1(DaemonService2.this)) {
+            Intent ii = new Intent(DaemonService2.this, DaemonService1.class);
+            startService(ii);
+        }
         String Process_Name = getPackageName() + ":daemonService1";
         boolean isRun = DaemonUtils.isProessRunning(DaemonService2.this, Process_Name);
         if (!isRun) {
@@ -110,6 +116,14 @@ public class DaemonService2 extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (thread == null || !thread.isAlive() || DaemonUtils.isHeartbeatStop2(this)) {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH-mm-ss");
+            if (thread == null) {
+                DaemonUtils.writeSomething(DaemonService2.this, "xx2", simpleDateFormat.format(new Date()) + "原因thread==null");
+            } else if (!thread.isAlive()) {
+                DaemonUtils.writeSomething(DaemonService2.this, "xx2", simpleDateFormat.format(new Date()) + "原因原因!thread.isAlive()");
+            } else if (DaemonUtils.isHeartbeatStop(this)) {
+                DaemonUtils.writeSomething(DaemonService2.this, "xx2", simpleDateFormat.format(new Date()) + "原因DaemonUtils.isHeartbeatStop(this)");
+            }
             DaemonUtils.heartbeat2(this);
             thread = new Thread(new Runnable() {
                 @Override
@@ -134,5 +148,17 @@ public class DaemonService2 extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return (IBinder) startS1;
+    }
+
+    private PowerManager.WakeLock wakeLock = null;
+
+    private void acquireWakeLock() {
+        if (null == wakeLock) {
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK
+                    | PowerManager.ON_AFTER_RELEASE, getClass()
+                    .getCanonicalName());
+            wakeLock.acquire();
+        }
     }
 }
