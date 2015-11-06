@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * 网络通讯相关工具
  * Created by zhangfan on 2015/11/6.
  */
 public class NetUtils {

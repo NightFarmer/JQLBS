@@ -21,7 +21,9 @@ import java.util.Collections;
  */
 public class JQLBSClient {
     static LocationClient mLocationClient;
-    final static String url = "http://www.jqgj.com.cn:9090/jqgj_server_client/login!lxsb_new.action";
+    static long preUploadTime;
+
+//    final static String url = "http://www.jqgj.com.cn:9090/jqgj_server_client/login!lxsb_new.action";
 //                    String url = "http://192.168.1.80:8080/jqgj_2.0_serv/login!lxsb_new.action";
 
     /**
@@ -87,6 +89,7 @@ public class JQLBSClient {
             JQLocationBean locationBean = new JQLocationBean();
             locationBean.lat = bdLocation.getLatitude();
             locationBean.lon = bdLocation.getLongitude();
+            locationBean.radius = bdLocation.getRadius() + "";
             locationBean.loc_method = bdLocation.getLocType();
             locationBean.regsim = lbsParam.regsim;
             locationBean.cosim = lbsParam.cosim;
@@ -97,6 +100,10 @@ public class JQLBSClient {
             if (serverTime != 0) {
                 locationBean.time = serverTime;
             }
+            if (locationBean.time - preUploadTime < 50 * 1000) {
+                return;
+            }
+            preUploadTime = locationBean.time;
 
             switch (locationBean.loc_method) {
                 case 61:
@@ -109,7 +116,7 @@ public class JQLBSClient {
                     locationBean.loc_method = 3;
                     break;
             }
-            Log.i("xx", "一个位置");
+            Log.i("xx", "上报一个位置");
             boolean result = NetUtils.upload(Collections.singletonList(locationBean));
             if (!result) {
                 try {
