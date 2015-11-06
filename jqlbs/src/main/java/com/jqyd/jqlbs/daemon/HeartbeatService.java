@@ -9,6 +9,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
 
+import com.jqyd.jqlbs.UploadLocalPosition;
+
 import java.lang.reflect.Constructor;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,6 +22,8 @@ public class HeartbeatService extends Service {
     Thread thread;
     //    ThreadLocal<Thread> threadLocal = new ThreadLocal<>();
     HeartbeatCallBack heartbeatCallBack;
+
+    UploadLocalPosition uploadLocalPosition;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -59,6 +63,11 @@ public class HeartbeatService extends Service {
                                 handler.post(heartbeatCallBack);
                                 DaemonUtils.recordCallbackTime(HeartbeatService.this);
                             }
+                        }
+                        if (uploadLocalPosition == null || !uploadLocalPosition.isAlive()) {
+                            uploadLocalPosition = new UploadLocalPosition();
+                            uploadLocalPosition.context = HeartbeatService.this;
+                            uploadLocalPosition.start();
                         }
 //                        Log.i("xx", "回调成功");
 //                        long l = System.currentTimeMillis();

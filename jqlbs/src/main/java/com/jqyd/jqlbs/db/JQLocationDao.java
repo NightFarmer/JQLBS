@@ -24,6 +24,6 @@ public class JQLocationDao extends BaseDao<JQLocationBean, Integer> {
     }
 
     public List<JQLocationBean> queryAllByAddTime() throws SQLException {
-        return getDao().queryBuilder().orderBy("time", false).query();
+        return getDao().queryBuilder().orderBy("time", false).offset((long) 0).limit((long) 10).query();
     }
 }

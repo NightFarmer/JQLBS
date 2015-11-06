@@ -20,6 +20,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,7 +35,7 @@ public class JQLBSClient {
 
     /**
      * 请求久其定位接口，定位成功与否都直接提交久其服务器
-     * 若提交失败则保持至本地，下次调用本方法时一同提交
+     * 若提交失败则保持至本地，下次联网时一同提交
      *
      * @param callBack 百度定位成功回调
      */
@@ -46,9 +48,6 @@ public class JQLBSClient {
             BDLocationListener bdLocationListener = new BDLocationListener() {
                 @Override
                 public void onReceiveLocation(BDLocation bdLocation) {
-//                    if (bdLocation.getLocType() == 63) {
-//                        return;
-//                    }
                     new Thread(new UpLoadLocRunnable(bdLocation, context, lbsParam)).start();
                     if (callBack != null) {
                         callBack.onResult(bdLocation.getLocType());
@@ -72,20 +71,12 @@ public class JQLBSClient {
 
     /**
      * 请求久其定位接口，定位成功与否都直接提交久其服务器
-     * 若提交失败则保持至本地，下次调用本方法时一同提交
+     * 若提交失败则保持至本地，下次联网时一同提交
      */
     public static void upLoadLocation(Context context, @NonNull LBSParam lbsParam) {
         upLoadLocation(context, lbsParam, null);
     }
 
-    private static String switchEncode(String param) {
-        byte[] temp = param.getBytes();
-        String result = "";
-        for (byte aTemp : temp) {
-            result += aTemp + ";";
-        }
-        return result;
-    }
 
     private static class UpLoadLocRunnable implements Runnable {
 
@@ -111,81 +102,34 @@ public class JQLBSClient {
             locationBean.gguid = lbsParam.gguid;
             locationBean.guid = lbsParam.guid;
             locationBean.zdmc = lbsParam.zdmc;
+            long serverTime = Utils.getServerTime();
+            if (serverTime != 0) {
+                locationBean.time = serverTime;
+            }
 
             switch (locationBean.loc_method) {
                 case 61:
                     locationBean.loc_method = 1;
                     break;
                 case 66:
+                    locationBean.loc_method = 0;
+                    break;
                 case 161:
                     locationBean.loc_method = 3;
                     break;
             }
-            List<JQLocationBean> jqLocationBeans = new ArrayList<>();
-            try {
-                JQLocationDao jqLocationDao = new JQLocationDao(context);
-                jqLocationDao.save(locationBean);
-                jqLocationBeans = jqLocationDao.queryAllByAddTime();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-//            String locs = DaemonUtils.read(context, DaemonUtils.LocalPosition);
-//            Log.i("xx", locs + "\n");
-//            try {
-//                jqLocationBeans = new Gson().fromJson(locs, new TypeToken<List<JQLocationBean>>() {
-//                }.getType());
-//            } catch (JsonSyntaxException e) {
-//                e.printStackTrace();
-//                DaemonUtils.save(context, DaemonUtils.LocalPosition, "");
-//            }
-            if (jqLocationBeans == null) jqLocationBeans = new ArrayList<>();
-//            jqLocationBeans.add(locationBean);
-//            DaemonUtils.save(context, DaemonUtils.LocalPosition, new Gson().toJson(jqLocationBeans));
-//                    if (jqLocationBeans == null) return;
-
-//                    String json = JQLocationBean.getUpLoadJson(Collections.singletonList(locationBean));
-            Log.i("xx", jqLocationBeans.size() + "个位置信息" /*+ bdLocation.getTime()*/);
-            final String json = JQLocationBean.getUpLoadJson(jqLocationBeans);
-//                    httpClient.get
-
-            final String encodeJson = switchEncode(json);
-            final List<JQLocationBean> finalJqLocationBeans = jqLocationBeans;
-
-            OutputStream outputStream = null;
-            try {
-                URL realUrl = new URL(url);
-                HttpURLConnection connection = (HttpURLConnection) realUrl.openConnection();
-                connection.setDoOutput(true);
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Accept-Charset", "utf-8");
-                connection.setRequestProperty("Content-Type", "application/json");
-
-                outputStream = connection.getOutputStream();
-                outputStream.write(encodeJson.getBytes());
-                outputStream.flush();
-
-                BufferedReader in = new BufferedReader(new InputStreamReader(
-                        connection.getInputStream(), "utf-8"));
-                String readLine;
-                StringBuilder sb = new StringBuilder();
-                while ((readLine = in.readLine()) != null) {
-                    sb.append(readLine);
-                }
-                String result = sb.toString();
-                System.out.println(result);
-                JQLocationDao jqLocationDao = new JQLocationDao(context);
-                jqLocationDao.delete(finalJqLocationBeans);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
+            Log.i("xx", "一个位置");
+            boolean result = Utils.upload(Collections.singletonList(locationBean));
+            if (!result) {
                 try {
-                    if (outputStream != null) {
-                        outputStream.close();
-                    }
-                } catch (IOException e) {
+                    JQLocationDao jqLocationDao = new JQLocationDao(context);
+                    jqLocationDao.save(locationBean);
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
+
         }
+
     }
 }
