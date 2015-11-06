@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by zhangfan on 2015/11/6.
  */
-public class Utils {
+public class NetUtils {
     final static String url = "http://www.jqgj.com.cn:9090/jqgj_server_client/login!lxsb_new.action";
 
     public static String switchEncode(String param) {

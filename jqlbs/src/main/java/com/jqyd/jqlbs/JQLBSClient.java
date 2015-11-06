@@ -12,17 +12,8 @@ import com.baidu.location.LocationClientOption;
 import com.jqyd.jqlbs.bean.JQLocationBean;
 import com.jqyd.jqlbs.db.JQLocationDao;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * 定位发起类<br/>
@@ -102,7 +93,7 @@ public class JQLBSClient {
             locationBean.gguid = lbsParam.gguid;
             locationBean.guid = lbsParam.guid;
             locationBean.zdmc = lbsParam.zdmc;
-            long serverTime = Utils.getServerTime();
+            long serverTime = NetUtils.getServerTime();
             if (serverTime != 0) {
                 locationBean.time = serverTime;
             }
@@ -119,7 +110,7 @@ public class JQLBSClient {
                     break;
             }
             Log.i("xx", "一个位置");
-            boolean result = Utils.upload(Collections.singletonList(locationBean));
+            boolean result = NetUtils.upload(Collections.singletonList(locationBean));
             if (!result) {
                 try {
                     JQLocationDao jqLocationDao = new JQLocationDao(context);

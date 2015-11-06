@@ -56,7 +56,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     //如果没有SDCard 默认存储在项目文件目录下
     private void initDtaBasePath() {
-//        if (!Utils.ExistSDCard()) {
+//        if (!NetUtils.ExistSDCard()) {
         String path = mContext.getFilesDir().getAbsolutePath() + "/jqLocation/";
         File file = new File(path);
         if (!file.exists()) {

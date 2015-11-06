@@ -11,9 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 线程：上传本地存储的位置信息
  * Created by zhangfan on 2015/11/6.
  */
-public class UploadLocalPosition extends Thread {
+public class UploadLocalPositionThread extends Thread {
 
     public Context context;
 
@@ -34,7 +35,7 @@ public class UploadLocalPosition extends Thread {
 
         Log.i("xx", jqLocationBeans.size() + "个本地位置信息");
 
-        boolean result = Utils.upload(jqLocationBeans);
+        boolean result = NetUtils.upload(jqLocationBeans);
         if (result) {
             JQLocationDao jqLocationDao = new JQLocationDao(context);
             try {
