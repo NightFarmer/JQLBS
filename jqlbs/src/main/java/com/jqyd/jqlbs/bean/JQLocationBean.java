@@ -36,7 +36,7 @@ public class JQLocationBean extends LocationBaseBean implements Serializable {
     public String guid = "3AEF542D-DC5D-CB54-E8F5-02AB22D764";//人员id
 
     @DatabaseField
-    public int loc_method = 3;//位置上报的方式；0小区；1卫星；3百度；-1百度失败
+    public int loc_method = 3;//位置上报的方式；0小区；1卫星；3百度；-1百度失败, 2百度的GPS定位类型
 
     @DatabaseField
     public String yys = "0";//运营商1、联通2、电信3、移动
